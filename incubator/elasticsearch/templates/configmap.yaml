@@ -1,3 +1,5 @@
+{{- $majorVersion := include "elasticsearch.majorversion" . | int -}}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,14 +15,14 @@ data:
 
     node.data: ${NODE_DATA:true}
     node.master: ${NODE_MASTER:true}
-{{- if hasPrefix "5." .Values.appVersion }}
+{{- if $majorVersion | le 5 }}
     node.ingest: ${NODE_INGEST:true}
 {{- end }}
     node.name: ${HOSTNAME}
 
     network.host: 0.0.0.0
 
-{{- if hasPrefix "2." .Values.appVersion }}
+{{- if $majorVersion | eq 2 }}
     # see https://github.com/kubernetes/kubernetes/issues/3595
     bootstrap.mlockall: ${BOOTSTRAP_MLOCKALL:false}
 
@@ -28,8 +30,7 @@ data:
       zen:
         ping.unicast.hosts: ${DISCOVERY_SERVICE:}
         minimum_master_nodes: ${MINIMUM_MASTER_NODES:2}
-{{- end }}
-{{- if hasPrefix "5." .Values.appVersion }}
+{{- else if $majorVersion | le 5 }}
     # see https://github.com/kubernetes/kubernetes/issues/3595
     bootstrap.memory_lock: ${BOOTSTRAP_MEMORY_LOCK:false}
 
@@ -59,7 +60,7 @@ data:
 {{- if .Values.cluster.config }}
 {{ .Values.cluster.config | indent 4 }}
 {{- end }}
-{{- if hasPrefix "2." .Values.image.tag }}
+{{- if $majorVersion | eq 2 }}
   logging.yml: |-
     # you can override this using by setting a system property, for example -Des.logger.level=DEBUG
     es.logger.level: INFO
@@ -75,8 +76,7 @@ data:
         layout:
           type: consolePattern
           conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
-{{- end }}
-{{- if hasPrefix "5." .Values.image.tag }}
+{{- else if $majorVersion | lt 5 }}
   log4j2.properties: |-
     status = error
     appender.console.type = Console

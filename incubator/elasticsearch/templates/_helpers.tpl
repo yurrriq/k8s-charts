@@ -73,3 +73,18 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 {{- end -}}
 {{- end -}}
+
+
+{{- define "elasticsearch.version" -}}
+{{- default .Chart.AppVersion .Values.image.tag -}}
+{{- end -}}
+
+
+{{- define "elasticsearch.majorversion" -}}
+{{- include "elasticsearch.version" . | splitList "." | first -}}
+{{- end -}}
+
+
+{{- define "elasticsearch.image" -}}
+{{- printf "%s:%s" .Values.image.repository (include "elasticsearch.version" .) -}}
+{{- end -}}

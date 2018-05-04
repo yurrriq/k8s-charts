@@ -1,3 +1,5 @@
+{{- $majorVersion := include "elasticsearch.majorversion" . | int -}}
+---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
@@ -60,7 +62,7 @@ spec:
         env:
         - name: NODE_DATA
           value: "false"
-{{- if hasPrefix "5." .Values.appVersion }}
+{{- if $majorVersion | le 5 }}
         - name: NODE_INGEST
           value: "false"
 {{- end }}
@@ -90,7 +92,7 @@ spec:
             path: /_cluster/health?wait_for_status=yellow
             port: 9200
           initialDelaySeconds: 90
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: {{ template "elasticsearch.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         ports:
         - containerPort: 9200
@@ -101,12 +103,11 @@ spec:
         - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
           name: config
           subPath: elasticsearch.yml
-{{- if hasPrefix "2." .Values.image.tag }}
+{{- if $majorVersion | eq 2 }}
         - mountPath: /usr/share/elasticsearch/config/logging.yml
           name: config
           subPath: logging.yml
-{{- end }}
-{{- if hasPrefix "5." .Values.image.tag }}
+{{- else if $majorVersion | lt 5 }}
         - mountPath: /usr/share/elasticsearch/config/log4j2.properties
           name: config
           subPath: log4j2.properties

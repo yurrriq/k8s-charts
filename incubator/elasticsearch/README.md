@@ -1,6 +1,6 @@
 # Elasticsearch Helm Chart
 
-This chart uses a standard Docker image of Elasticsearch (hub.docker.com/r/blacktop/elasticsearch) and uses a service pointing to the master's transport port for service discovery.
+This chart uses a standard Docker image of Elasticsearch (docker.elastic.co/elasticsearch/elasticsearch-oss) and uses a service pointing to the master's transport port for service discovery.
 Elasticsearch does not communicate with the Kubernetes API, hence no need for RBAC permissions.
 
 ## Warning for previous users
@@ -61,9 +61,8 @@ The following table lists the configurable parameters of the elasticsearch chart
 
 |              Parameter               |                             Description                             |               Default                |
 | ------------------------------------ | ------------------------------------------------------------------- | ------------------------------------ |
-| `appVersion`                         | Application Version (Elasticsearch)                                 | `5.4`                                |
 | `image.repository`                   | Container image name                                                | `centerforopenscience/elasticsearch` |
-| `image.tag`                          | Container image tag                                                 | `5.4`                                |
+| `image.tag`                          | Container image tag                                                 | `.Chart.AppVersion`                  |
 | `image.pullPolicy`                   | Container pull policy                                               | `Always`                             |
 | `cluster.name`                       | Cluster name                                                        | `elasticsearch`                      |
 | `cluster.kubernetesDomain`           | Kubernetes cluster domain name                                      | `cluster.local`                      |
@@ -114,7 +113,7 @@ The YAML value of cluster.config is appended to elasticsearch.yml file for addit
 
 ## Application Version
 
-This chart aims to support Elasticsearch v2 and v5 deployments by specifying the `values.yaml` parameter `appVersion`.
+This chart aims to support Elasticsearch v2 and v5 deployments by parsing specifying the `values.yaml` parameter `image.tag`.
 
 ### Version Specific Features
 

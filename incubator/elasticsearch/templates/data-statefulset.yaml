@@ -1,3 +1,5 @@
+{{- $majorVersion := include "elasticsearch.majorversion" . | int -}}
+---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
@@ -57,7 +59,7 @@ spec:
         securityContext:
           privileged: true
       - name: "chown"
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: {{ template "elasticsearch.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         command:
         - /bin/bash
@@ -86,7 +88,7 @@ spec:
         - name: {{ $key }}
           value: {{ $value | quote }}
         {{- end }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: {{ template "elasticsearch.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         ports:
         - containerPort: 9300
@@ -108,12 +110,11 @@ spec:
         - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
           name: config
           subPath: elasticsearch.yml
-{{- if hasPrefix "2." .Values.image.tag }}
+{{- if $majorVersion | eq 2 }}
         - mountPath: /usr/share/elasticsearch/config/logging.yml
           name: config
           subPath: logging.yml
-{{- end }}
-{{- if hasPrefix "5." .Values.image.tag }}
+{{- else if $majorVersion | lt 5 }}
         - mountPath: /usr/share/elasticsearch/config/log4j2.properties
           name: config
           subPath: log4j2.properties
